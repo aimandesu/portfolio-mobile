@@ -23,6 +23,11 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {Dimensions} from 'react-native';
+import AppNavigation from './src/navigation/AppNavigation';
+import {useProfileStore} from './src/store/store';
+import LoadingOverlay from './src/components/LoadingOverlay';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -61,6 +66,9 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
+
   /*
    * To keep the template simple and small we're adding padding to prevent view
    * from rendering under the System UI.
@@ -72,16 +80,27 @@ function App(): React.JSX.Element {
    */
   const safePadding = '5%';
 
+  const hasHydrated = useProfileStore(state => state._hasHydrated);
+
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
+    <SafeAreaProvider>
+      <View
+        style={[
+          backgroundStyle,
+          {
+            height: windowHeight,
+          },
+        ]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        {!hasHydrated ? <LoadingOverlay visible={true} /> : <AppNavigation />}
+
+        {/* Default Template */}
+        {/* <ScrollView style={backgroundStyle}>
         <View style={{paddingRight: safePadding}}>
-          <Header/>
+          <Header />
         </View>
         <View
           style={{
@@ -104,8 +123,9 @@ function App(): React.JSX.Element {
           </Section>
           <LearnMoreLinks />
         </View>
-      </ScrollView>
-    </View>
+      </ScrollView> */}
+      </View>
+    </SafeAreaProvider>
   );
 }
 
