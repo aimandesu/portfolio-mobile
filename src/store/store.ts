@@ -35,6 +35,7 @@ type ProfileStore = {
   updateProfile: (updatedProfile: ProfileClass) => Promise<void>;
   uploadImage: (imageFile: File) => Promise<void>;
   uploadResume: (resume: File) => Promise<void>;
+  resetStorage: () => void;
 };
 
 export const useProfileStore = create<ProfileStore>()(
@@ -43,6 +44,7 @@ export const useProfileStore = create<ProfileStore>()(
       profile: null,
       token: null,
       _hasHydrated: false,
+      resetStorage: () => set({profile: null, token: null}),
       signup: async (username, name, email, password, passwordConfirmation) => {
         try {
           const response = await fetch(

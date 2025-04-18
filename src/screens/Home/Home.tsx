@@ -5,7 +5,7 @@ import {useTheme} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Home = () => {
-  const {profile, logout} = useProfileStore();
+  const {profile, logout, resetStorage} = useProfileStore();
   const insets = useSafeAreaInsets();
   const {colors} = useTheme();
 
@@ -22,6 +22,7 @@ const Home = () => {
         // backgroundColor: 'red',
       }}>
       <Button onPress={() => logout()} title={'Log out'} />
+      <Button onPress={() => resetStorage()} title={'Reset storage'} />
 
       <Text style={{color: colors.text}}>{profile?.name}</Text>
     </View>
