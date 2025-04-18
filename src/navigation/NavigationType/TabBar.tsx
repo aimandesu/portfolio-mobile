@@ -3,7 +3,10 @@ import {Text, ViewStyle} from 'react-native';
 import Home from '../../screens/Home/Home';
 import React from 'react';
 import {getFocusedRouteNameFromRoute, useTheme} from '@react-navigation/native';
-import Profile from '../../screens/Home/Profile';
+import Profile from '../../screens/Profile/Profile';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+import {faHouse} from '@fortawesome/free-solid-svg-icons/faHouse';
+import {faUser} from '@fortawesome/free-solid-svg-icons/faUser';
 
 export type RootTabParamList = {
   Home: undefined;
@@ -56,7 +59,9 @@ const TabNavigator = () => {
         component={Home}
         options={{
           headerShown: false,
-          //   tabBarIcon: ({color, size}) => <Text>home</Text>,
+          tabBarIcon: ({color, size}) => (
+            <FontAwesomeIcon icon={faHouse} color={colors.text} />
+          ),
         }}
       />
       <Tab.Screen
@@ -64,7 +69,9 @@ const TabNavigator = () => {
         component={Profile}
         options={{
           headerShown: true,
-          //  tabBarIcon: ({color, size}) => <Text>Test</Text>,
+          tabBarIcon: ({color, size}) => (
+            <FontAwesomeIcon icon={faUser} color={colors.text} />
+          ),
         }}
       />
     </Tab.Navigator>
