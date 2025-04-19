@@ -15,8 +15,9 @@ import {usePreventNavigation} from '../../../hooks/usePreventNavigationHook';
 import {UserSchema, ProfileClass} from '../../../lib/zod/UserSchema';
 import {RootStackParamList} from '../../../navigation/AppNavigation';
 import {useTheme} from '@react-navigation/native';
-import {keepLocalCopy, pick} from '@react-native-documents/picker';
+import {keepLocalCopy, pick, types} from '@react-native-documents/picker';
 import {RNFile, useProfileStore} from '../../../store/store';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 type EditProfileProps = NativeStackScreenProps<
   RootStackParamList,
@@ -30,6 +31,14 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
 
   const [imageFile, setImageFile] = useState<RNFile | null>(null);
   const [resumeFile, setResumeFile] = useState<RNFile | null>(null);
+  const [isSuccessfullySubmitted, setIsSuccessfullySubmitted] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    if (isSuccessfullySubmitted) {
+      navigation.goBack();
+    }
+  }, [isSuccessfullySubmitted, navigation]);
 
   const {
     control,
@@ -42,7 +51,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
     mode: 'onChange',
   });
 
-  usePreventNavigation(isDirty, {
+  usePreventNavigation(isDirty && !isSuccessfullySubmitted, {
     title: 'Discard your changes?',
     description: 'Are you sure you want to discard changes?',
     confirmText: 'Yes, discard',
@@ -60,7 +69,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       if (resumeFile) {
         await uploadResume(resumeFile);
       }
-      navigation.goBack();
+      setIsSuccessfullySubmitted(true);
     } catch (error: any) {
       console.log(error);
     }
@@ -86,7 +95,10 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
 
   const handlePickResume = async () => {
     try {
-      const [file] = await pick();
+      const [file] = await pick({
+        allowMultiSelection: false,
+        type: [types.pdf],
+      });
 
       // Create a local copy (optional, depending on your needs)
       const [localCopy] = await keepLocalCopy({
@@ -131,8 +143,118 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
     <ScrollView
       contentContainerStyle={{padding: 16, paddingBottom: 40}}
       keyboardShouldPersistTaps="handled">
-      {/* Username */}
-      <Text>Username</Text>
+      <View style={{display: 'flex', flexDirection: 'row'}}>
+        <Controller
+          control={control}
+          name="image"
+          render={({field: {value, onChange}}) => (
+            <TouchableOpacity onPress={handlePickImage}>
+              <View
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                  borderColor: colors.text,
+                  justifyContent: value ? undefined : 'center',
+                  alignItems: 'center',
+                }}>
+                {value ? (
+                  <Image
+                    source={{
+                      uri:
+                        typeof value === 'string'
+                          ? `http://10.0.2.2:8000/storage/${value}` // backend image stored as just filename
+                          : value.uri, // RNFile object
+                    }}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      borderRadius: 50,
+                      marginBottom: 10,
+                    }}
+                  />
+                ) : (
+                  <Text style={{color: colors.text}}>pick image</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+        <View style={{width: 10}} />
+        <Controller
+          control={control}
+          name="resume"
+          render={({field: {value}}) => {
+            const resumeUrl = typeof value === 'string' ? value : value?.uri;
+
+            return (
+              <View style={{gap: 8, flexGrow: 1}}>
+                {/* Upload PDF Button */}
+                <TouchableOpacity onPress={handlePickResume}>
+                  <View
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#ccc',
+                      padding: 12,
+                      borderRadius: 8,
+                      backgroundColor: '#f9f9f9',
+                    }}>
+                    <Text style={{color: '#555', textAlign: 'center'}}>
+                      {resumeUrl ? 'Change PDF' : 'Upload PDF'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: '#ccc',
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 8,
+                    backgroundColor: '#f9f9f9',
+                  }}>
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontSize: 12,
+                      color: '#333',
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="middle">
+                    {typeof value === 'string'
+                      ? `http://10.0.2.2:8000/storage/${resumeUrl}`
+                      : ''}
+                  </Text>
+
+                  {/* Copy Button */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      Clipboard.setString(
+                        resumeUrl == ''
+                          ? ''
+                          : `http://10.0.2.2:8000/storage/${resumeUrl}`,
+                      );
+                      // Show toast if you want
+                    }}
+                    style={{
+                      marginLeft: 8,
+                      padding: 8,
+                      backgroundColor: '#eee',
+                      borderRadius: 6,
+                    }}>
+                    <Text style={{fontSize: 12}}>Copy</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          }}
+        />
+      </View>
+      <Text style={{color: colors.text}}>Username</Text>
       <Controller
         control={control}
         name="username"
@@ -147,7 +269,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Name */}
-      <Text>Name</Text>
+      <Text style={{color: colors.text}}>Name</Text>
       <Controller
         control={control}
         name="name"
@@ -162,7 +284,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Title */}
-      <Text>Title</Text>
+      <Text style={{color: colors.text}}>Title</Text>
       <Controller
         control={control}
         name="title"
@@ -177,7 +299,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* About */}
-      <Text>About</Text>
+      <Text style={{color: colors.text}}>About</Text>
       <Controller
         control={control}
         name="about"
@@ -193,7 +315,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Location */}
-      <Text>Location</Text>
+      <Text style={{color: colors.text}}>Location</Text>
       <Controller
         control={control}
         name="location"
@@ -208,7 +330,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Address */}
-      <Text>Address</Text>
+      <Text style={{color: colors.text}}>Address</Text>
       <Controller
         control={control}
         name="address"
@@ -223,7 +345,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Email */}
-      <Text>Email</Text>
+      <Text style={{color: colors.text}}>Email</Text>
       <Controller
         control={control}
         name="email"
@@ -240,7 +362,7 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
       />
 
       {/* Age */}
-      <Text>Age</Text>
+      <Text style={{color: colors.text}}>Age</Text>
       <Controller
         control={control}
         name="age"
@@ -252,62 +374,6 @@ const EditProfile = ({navigation, route}: EditProfileProps) => {
             style={styles.input}
             keyboardType="numeric"
           />
-        )}
-      />
-
-      {/* Image */}
-      <Text>Profile Image</Text>
-      <Controller
-        control={control}
-        name="image"
-        render={({field: {value, onChange}}) => (
-          <TouchableOpacity onPress={handlePickImage}>
-            {value ? (
-              <Image
-                source={{
-                  uri:
-                    typeof value === 'string'
-                      ? value.startsWith('http') || value.startsWith('file')
-                        ? value // already full URL or local file
-                        : `http://10.0.2.2:8000/storage/${value}` // backend image stored as just filename
-                      : (value as any)?.uri, // RNFile object
-                }}
-                style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  marginBottom: 10,
-                }}
-              />
-            ) : (
-              <View style={[styles.uploadBox]}>
-                <Text>Pick Image</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
-      />
-
-      {/* Resume */}
-      <Text>Resume File</Text>
-      <Controller
-        control={control}
-        name="resume"
-        render={({field: {value}}) => (
-          <TouchableOpacity onPress={handlePickResume}>
-            <View style={[styles.uploadBox]}>
-              <Text>
-                {value
-                  ? typeof value === 'string'
-                    ? 'Resume Selected (URL)'
-                    : 'Resume Selected (File)'
-                  : 'Pick Resume (PDF)'}
-              </Text>
-              {typeof value === 'string' && (
-                <Text style={{fontSize: 12}}>{value.substring(0, 30)}...</Text>
-              )}
-            </View>
-          </TouchableOpacity>
         )}
       />
     </ScrollView>
@@ -324,6 +390,7 @@ const styles = {
     borderRadius: 8,
     marginBottom: 16,
     fontSize: 16,
+    backgroundColor: '#eee',
   },
   uploadBox: {
     width: 120,

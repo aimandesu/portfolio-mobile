@@ -6,7 +6,7 @@ const RNFileSchema = z.object({
   name: z.string(),
 });
 
-const FileOrUrlSchema = z.union([
+export const FileOrUrlSchema = z.union([
   RNFileSchema, // Local picked file
   z.string(), // Remote URL (string from backend)
 ]);

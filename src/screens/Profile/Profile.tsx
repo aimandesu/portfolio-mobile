@@ -8,6 +8,8 @@ import {Image} from 'react-native';
 import {faPencil} from '@fortawesome/free-solid-svg-icons/faPencil';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {AuthScreenNavigationProp} from '../../navigation/AppNavigation';
+import {EducationProvider} from '../../contexts/educationContext';
+import Education from '../Education/Education';
 
 const Profile = () => {
   const {profile, logout} = useProfileStore();
@@ -119,6 +121,9 @@ const Profile = () => {
           {profile?.email ?? 'Email'}
         </Text>
       </View>
+      <EducationProvider>
+        <Education />
+      </EducationProvider>
     </View>
   );
 };

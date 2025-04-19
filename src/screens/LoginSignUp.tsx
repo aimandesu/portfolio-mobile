@@ -77,7 +77,7 @@ const LoginSignUp: React.FC = () => {
           );
         }
       }
-      navigation.navigate('Home');
+      navigation.navigate('TabNavigator');
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : 'Authentication failed',
