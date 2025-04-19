@@ -29,11 +29,13 @@ const Profile = () => {
         <Image
           source={{
             uri:
-              profile?.image ??
-              'https://static.vecteezy.com/system/resources/thumbnails/025/221/361/small_2x/cartoon-cat-cute-ai-generate-png.png',
+              typeof profile?.image === 'string'
+                ? `http://10.0.2.2:8000/storage/${profile?.image ?? ''}`
+                : 'https://static.vecteezy.com/system/resources/thumbnails/025/221/361/small_2x/cartoon-cat-cute-ai-generate-png.png',
           }}
           style={{width: 60, height: 60, borderRadius: 25}}
         />
+
         <View style={{width: 10}} />
         <View
           style={{
@@ -59,7 +61,7 @@ const Profile = () => {
           }}>
           <Text
             style={{
-              color: colors.text,
+              color: custom.absoluteWhite,
               backgroundColor: custom.backgroundContainer,
               height: 'auto',
               borderRadius: 20,
@@ -73,12 +75,17 @@ const Profile = () => {
       <TouchableOpacity
         onPress={() => {
           navigation.navigate('EditProfile', {
-            userId: '123',
-            profile: ProfileInitial,
-            onSave: profile => {
-              // Update your state or API here
-              // console.log('Saved with new status:', newStatus);
+            profile: {
+              ...profile,
+              username: profile?.username ?? '',
+              id: profile?.id ?? 0,
+              name: profile?.name ?? '',
+              email: profile?.email ?? '',
             },
+            // onSave: profile => {
+            //   // Update your state or API here
+            //   // console.log('Saved with new status:', newStatus);
+            // },
           });
         }}
         style={{
@@ -101,12 +108,16 @@ const Profile = () => {
           borderRadius: 10,
           backgroundColor: custom.backgroundContainer,
         }}>
-        <Text style={{color: colors.text}}>
+        <Text style={{color: custom.absoluteWhite}}>
           {profile?.address ?? 'Address, '}
           {profile?.location ?? 'Location'}
         </Text>
-        <Text style={{color: colors.text}}>{profile?.about ?? 'About'}</Text>
-        <Text style={{color: colors.text}}>{profile?.email ?? 'Email'}</Text>
+        <Text style={{color: custom.absoluteWhite}}>
+          {profile?.about ?? 'About'}
+        </Text>
+        <Text style={{color: custom.absoluteWhite}}>
+          {profile?.email ?? 'Email'}
+        </Text>
       </View>
     </View>
   );

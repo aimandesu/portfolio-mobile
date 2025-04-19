@@ -1,15 +1,21 @@
 import {z} from 'zod';
 
+const RNFileSchema = z.object({
+  uri: z.string(),
+  type: z.string(),
+  name: z.string(),
+});
+
 const FileOrUrlSchema = z.union([
-  z.string().startsWith('file://'), // local
-  z.string(), // any remote string (e.g., filename or URL)
+  RNFileSchema, // Local picked file
+  z.string(), // Remote URL (string from backend)
 ]);
 
 export const UserSchema = z.object({
   username: z.string(),
   id: z.number(),
   name: z.string(),
-  age: z.number().nullable().optional(),
+  age: z.union([z.string(), z.number()]).nullable().optional(),
   title: z.string().nullable().optional(),
   about: z.string().nullable().optional(),
   location: z.string().nullable().optional(),

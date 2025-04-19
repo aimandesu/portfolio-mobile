@@ -5,6 +5,12 @@ import {ProfileClass, UserSchema} from '../lib/zod/UserSchema';
 import {z} from 'zod';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type RNFile = {
+  uri: string;
+  name: string;
+  type: string;
+};
+
 export const ProfileInitial: ProfileClass = {
   username: '',
   id: 0,
@@ -33,8 +39,8 @@ type ProfileStore = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updatedProfile: ProfileClass) => Promise<void>;
-  uploadImage: (imageFile: File) => Promise<void>;
-  uploadResume: (resume: File) => Promise<void>;
+  uploadImage: (imageFile: RNFile) => Promise<void>;
+  uploadResume: (resume: RNFile) => Promise<void>;
   resetStorage: () => void;
 };
 
@@ -173,14 +179,18 @@ export const useProfileStore = create<ProfileStore>()(
           throw new Error(error);
         }
       },
-      uploadImage: async imageFile => {
+      uploadImage: async (imageFile: RNFile) => {
         const {profile, token} = useProfileStore.getState();
         try {
           if (!token) {
             throw new Error('No token available');
           }
           const formData = new FormData();
-          formData.append('image', imageFile);
+          formData.append('image', {
+            uri: imageFile.uri,
+            type: imageFile.type,
+            name: imageFile.name,
+          } as any);
 
           const response = await fetch(
             `http://10.0.2.2:8000/api/users/${profile?.id}/uploadImage`,
@@ -189,6 +199,7 @@ export const useProfileStore = create<ProfileStore>()(
               body: formData,
               headers: {
                 Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
               },
             },
           );
@@ -207,13 +218,17 @@ export const useProfileStore = create<ProfileStore>()(
           throw new Error(error);
         }
       },
-      uploadResume: async (resume: File) => {
+      uploadResume: async (resume: RNFile) => {
         const {profile, token} = useProfileStore.getState();
         try {
           const formData = new FormData();
 
-          if (resume && resume instanceof File) {
-            formData.append('resume', resume);
+          if (resume) {
+            formData.append('resume', {
+              uri: resume.uri,
+              type: resume.type,
+              name: resume.name,
+            } as any);
           }
 
           const response = await fetch(
@@ -223,6 +238,7 @@ export const useProfileStore = create<ProfileStore>()(
               body: formData,
               headers: {
                 Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
               },
             },
           );

@@ -14,12 +14,12 @@ import {faXmark} from '@fortawesome/free-solid-svg-icons/faXmark';
 import {ProfileClass} from '../lib/zod/UserSchema';
 
 export type RootStackParamList = {
-  Home: undefined;
+  TabNavigator: undefined;
   LoginSignUp: undefined;
   EditProfile: {
-    userId: string;
+    // userId: string;
     profile: ProfileClass;
-    onSave?: (profile: ProfileClass) => void;
+    // onSave?: (profile: ProfileClass) => void;
   };
 };
 
@@ -47,7 +47,7 @@ const AppNavigation = () => {
             />
           ) : (
             <AuthStack.Screen
-              name="Home"
+              name="TabNavigator"
               component={TabNavigator}
               options={{headerShown: false}}
             />
@@ -68,10 +68,11 @@ const AppNavigation = () => {
                       alignItems: 'center',
                       paddingLeft: 10,
                     }}
-                    onPress={() => {
-                      navigation.goBack();
-                    }}>
-                    <FontAwesomeIcon icon={faXmark} color={'white'} />
+                    onPress={() => navigation.goBack()}>
+                    <FontAwesomeIcon
+                      icon={faXmark}
+                      color={isDarkMode ? 'white' : 'black'}
+                    />
                     <View style={{width: 10}} />
                   </TouchableOpacity>
                 ),
